@@ -1,0 +1,463 @@
+//1091.shoertest path
+
+class Solution {
+public:
+    int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
+        vector<pair<int, int>> possibleDirections = {
+            {0, 1}, {0, -1}, {1, 0}, {-1, 0},
+            {1, 1}, {1, -1}, {-1, -1}, {-1, 1}
+        };
+        
+        int n = grid.size();
+        if (grid[0][0] != 0 || grid[n-1][n-1] != 0) return -1; 
+        
+        queue<pair<int, int>> q;
+        q.push({0, 0});
+        grid[0][0] = 1;  // store distance directly
+
+        while (!q.empty()) {
+            pair<int, int> currentCoords = q.front();
+            q.pop();
+
+            int row = currentCoords.first;
+            int col = currentCoords.second;
+            int distance = grid[row][col];
+
+            if (row == n - 1 && col == n - 1) {
+                return distance;
+            }
+
+            for (auto& dir : possibleDirections) {
+                int nr = row + dir.first;
+                int nc = col + dir.second;
+
+                if (nr >= 0 && nr < n && nc >= 0 && nc < n && grid[nr][nc] == 0) {
+                    q.push({nr, nc});
+                    grid[nr][nc] = distance + 1;  
+                }
+            }
+        }
+
+        return -1;  // 
+    }
+};
+
+//690 employee importance
+/*
+// Definition for Employee.
+class Employee {
+public:
+    int id;
+    int importance;
+    vector<int> subordinates;
+};
+*/
+
+class Solution {
+public:
+    unordered_map<int, Employee*> empMap;
+    
+    int getImportance(vector<Employee*> employees, int id) {
+        // Build a hash map for quick lookup by ID
+        for (auto e : employees) {
+            empMap[e->id] = e;
+        }
+
+        return dfs(id);
+    }
+
+private:
+    int dfs(int id) {
+        Employee* emp = empMap[id];
+        int total = emp->importance;
+
+        for (int subId : emp->subordinates) {
+            total += dfs(subId);  // recursively add subordinate's importance
+        }
+
+        return total;
+    }
+};
+//Number of Provinces #547
+
+class Solution {
+public:
+    void dfs(vector<vector<int>>& isConnected, vector<bool>& visited, int i) {
+        visited[i] = true;
+        for (int j = 0; j < isConnected.size(); ++j) {
+            if (isConnected[i][j] == 1 && !visited[j]) {
+                dfs(isConnected, visited, j);
+            }
+        }
+    }
+
+    int findCircleNum(vector<vector<int>>& isConnected) {
+        int n = isConnected.size();
+        vector<bool> visited(n, false);
+        int count = 0;
+
+        for (int i = 0; i < n; ++i) {
+            if (!visited[i]) {
+                dfs(isConnected, visited, i);
+                count++;
+            }
+        }
+
+        return count;
+    }
+};
+//#1315
+**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int sumEvenGrandparent(TreeNode* root) {
+        
+    return dfs(root, nullptr, nullptr);
+    }
+
+private:
+    int dfs(TreeNode* node, TreeNode* parent, TreeNode* grandparent) {
+        if (!node) return 0;
+
+        int sum = 0;
+        
+        if (grandparent && grandparent->val % 2 == 0) {
+            sum += node->val;
+        }
+
+        sum += dfs(node->left, node, parent);
+        sum += dfs(node->right, node, parent);
+
+        return sum;
+    }
+};
+//#695 Max area
+ int maxArea = 0;
+        int rows = grid.size();
+        int cols = grid[0].size();
+
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                if (grid[i][j] == 1) {
+                    maxArea = max(maxArea, dfs(grid, i, j));
+                }
+            }
+        }
+
+        return maxArea;
+    }
+
+private:
+    int dfs(vector<vector<int>>& grid, int i, int j) {
+        // Out of bounds or water
+        if (i < 0 || j < 0 || i >= grid.size() || j >= grid[0].size() || grid[i][j] == 0)
+            return 0;
+
+        // Mark this cell as visited
+        grid[i][j] = 0;
+
+        // Explore all 4 directions
+        return 1 +
+            dfs(grid, i + 1, j) +
+            dfs(grid, i - 1, j) +
+            dfs(grid, i, j + 1) +
+            dfs(grid, i, j - 1);
+    }
+};
+//#399 Evaluation Division 
+
+class Solution {
+public:
+    vector<double> calcEquation(vector<vector<string>>& equations, vector<double>& values, vector<vector<string>>& queries) {
+        
+   double dfs(string curr, string target, unordered_set<string>& visited) {
+        if (curr == target) return 1.0;
+        visited.insert(curr);
+
+        for (auto& [next, weight] : graph[curr]) {
+            if (visited.count(next)) continue;
+            double res = dfs(next, target, visited);
+            if (res != -1.0) return res * weight;
+        }
+
+        return -1.0;
+    }
+
+    vector<double> calcEquation(
+        vector<vector<string>>& equations,
+        vector<double>& values,
+        vector<vector<string>>& queries) {
+
+        for (int i = 0; i < equations.size(); ++i) {
+            string a = equations[i][0], b = equations[i][1];
+            double val = values[i];
+            graph[a].emplace_back(b, val);
+            graph[b].emplace_back(a, 1.0 / val);
+        }
+
+        vector<double> result;
+        for (auto& q : queries) {
+            string src = q[0], dst = q[1];
+            if (!graph.count(src) || !graph.count(dst)) {
+                result.push_back(-1.0);
+            } else {
+                unordered_set<string> visited;
+                double val = dfs(src, dst, visited);
+                result.push_back(val);
+            }
+        }
+
+        return result;
+    }
+};
+
+//#129 sum root leaf
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int sumNumbers(TreeNode* root) {
+      return dfs(root, 0);
+    }
+
+private:
+    int dfs(TreeNode* node, int current) {
+        if (!node) return 0;
+
+        current = current * 10 + node->val;
+
+        // If it's a leaf node, return the number formed
+        if (!node->left && !node->right) return current;
+
+        // Sum from left and right subtrees
+        return dfs(node->left, current) + dfs(node->right, current);
+    }
+};
+//130 surrounded regions 
+
+class Solution {
+public:
+    void solve(vector<vector<char>>& board) {
+        
+     int rows = board.size();
+        if (rows == 0) return;
+        int cols = board[0].size();
+
+        // Step 1: Mark safe border-connected 'O's with 'S'
+        for (int i = 0; i < rows; ++i) {
+            dfs(board, i, 0);         
+            dfs(board, i, cols - 1);  
+        }
+        for (int j = 0; j < cols; ++j) {
+            dfs(board, 0, j);          
+            dfs(board, rows - 1, j);   
+        }
+
+        // Step 2: Flip 'O' to 'X', and 'S' back to 'O'
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < cols; ++j) {
+                if (board[i][j] == 'O') board[i][j] = 'X';
+                if (board[i][j] == 'S') board[i][j] = 'O';
+            }
+        }
+    }
+
+private:
+    void dfs(vector<vector<char>>& board, int i, int j) {
+        int rows = board.size();
+        int cols = board[0].size();
+        if (i < 0 || j < 0 || i >= rows || j >= cols || board[i][j] != 'O') return;
+
+        board[i][j] = 'S';  // mark as safe
+
+        dfs(board, i + 1, j);
+        dfs(board, i - 1, j);
+        dfs(board, i, j + 1);
+        dfs(board, i, j - 1);
+    }
+};
+//529 Mineswear
+class Solution {
+public:
+    int m, n;
+    std::vector<std::vector<char>> updateBoard(std::vector<std::vector<char>>& board, std::vector<int>& click) {
+        m = board.size();
+        n = board[0].size();
+
+        int r = click[0], c = click[1];
+
+        // If clicked on a mine, game over
+        if (board[r][c] == 'M') {
+            board[r][c] = 'X';
+            return board;
+        }
+
+        // Otherwise, start DFS from the clicked empty square
+        dfs(board, r, c);
+        return board;
+    }
+
+private:
+    void dfs(std::vector<std::vector<char>>& board, int r, int c) {
+       
+        if (r < 0 || r >= m || c < 0 || c >= n || board[r][c] != 'E') {
+            return;
+        }
+
+        int minesCount = 0;
+        int dr[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+        int dc[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+      
+        for (int i = 0; i < 8; ++i) {
+            int nr = r + dr[i];
+            int nc = c + dc[i];
+            if (nr >= 0 && nr < m && nc >= 0 && nc < n && board[nr][nc] == 'M') {
+                minesCount++;
+            }
+        }
+
+        if (minesCount > 0) {
+            board[r][c] = (char)('0' + minesCount);
+        } else {
+            board[r][c] = 'B';
+            // Recursively reveal neighbors only if no adjacent mines
+            for (int i = 0; i < 8; ++i) {
+                int nr = r + dr[i];
+                int nc = c + dc[i];
+                
+                dfs(board, nr, nc);
+            }
+        }
+    }
+};
+
+//#1123
+class Solution {
+public:
+    TreeNode* lcaDeepestLeaves(TreeNode* root) {
+        function<pair<int, TreeNode*>(TreeNode*)> dfs = [&](TreeNode* node) -> pair<int, TreeNode*> {
+            if (!node) return {0, nullptr};
+
+            auto left = dfs(node->left);
+            auto right = dfs(node->right);
+
+            if (left.first == right.first)
+                return {left.first + 1, node};
+            else if (left.first > right.first)
+                return {left.first + 1, left.second};
+            else
+                return {right.first + 1, right.second};
+        };
+
+        return dfs(root).second;
+    }
+};
+  
+//#99 recovary binary search 
+class Solution {
+public:
+    void recoverTree(TreeNode* root) {
+    TreeNode* first = nullptr;
+        TreeNode* second = nullptr;
+        TreeNode* prev = nullptr;
+
+        // Inorder traversal function to find the misplaced nodes
+        function<void(TreeNode*)> inorder = [&](TreeNode* node) {
+            if (!node) return;
+
+            inorder(node->left);
+
+            if (prev && node->val < prev->val) {
+                if (!first) {
+                    first = prev;  // first time we encounter wrong order
+                }
+                second = node;     // second can be updated more than once
+            }
+
+            prev = node;
+
+            inorder(node->right);
+        };
+
+        inorder(root);
+
+        if (first && second) {
+            swap(first->val, second->val);
+        }
+    }
+};
+//# 1391
+
+class Solution {
+public:
+    bool hasValidPath(vector<vector<int>>& grid) {
+   int m = grid.size();
+        int n = grid[0].size();
+        vector<vector<bool>> visited(m, vector<bool>(n, false));
+
+        // Directions: up, right, down, left
+        vector<int> dx = {-1, 0, 1, 0};
+        vector<int> dy = {0, 1, 0, -1};
+
+        // Mapping: for each street type, the allowed directions
+        // 0=up, 1=right, 2=down, 3=left
+        unordered_map<int, vector<int>> street = {
+            {1, {1, 3}},   // left ↔️ right
+            {2, {0, 2}},   // up ↕️ down
+            {3, {1, 2}},   // right ↘️ down
+            {4, {2, 3}},   // down ↙️ left
+            {5, {0, 1}},   // up ↗️ right
+            {6, {0, 3}},   // up ↖️ left
+        };
+
+        // Matching direction: if we go from (x, y) to (nx, ny) via dir,
+        // then the cell at (nx, ny) must accept the opposite direction (dir^2)
+        auto isConnected = [&](int from, int to, int dir) {
+            for (int d : street[to]) {
+                if (d == (dir ^ 2)) return true;
+            }
+            return false;
+        };
+
+        function<bool(int, int)> dfs = [&](int x, int y) {
+            if (x == m - 1 && y == n - 1) return true;
+
+            visited[x][y] = true;
+            for (int dir : street[grid[x][y]]) {
+                int nx = x + dx[dir];
+                int ny = y + dy[dir];
+
+              
+
+                if (isConnected(grid[x][y], grid[nx][ny], dir)) {
+                    if (dfs(nx, ny)) return true;
+                }
+            }
+
+            return false;
+        };
+
+        return dfs(0, 0);
+    }
+};     
+  
